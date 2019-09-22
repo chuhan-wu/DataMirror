@@ -1,0 +1,508 @@
+import ddf.minim.*;
+
+import processing.video.*;
+import gab.opencv.*;
+
+import wblut.math.*;
+import wblut.processing.*;
+import wblut.core.*;
+import wblut.hemesh.*;
+import wblut.geom.*;
+import java.util.Iterator;
+import java.awt.*;
+import java.awt.Rectangle;
+
+//audio
+AudioPlayer playerBG;
+AudioPlayer player1;
+AudioPlayer player2;
+AudioPlayer player3;
+AudioPlayer player4;
+Minim bgMusic;
+Minim robotVoice1;
+Minim robotVoice2;
+Minim robotVoice3;
+Minim robotVoice4;
+Minim audioInput; 
+AudioInput in; 
+
+//cam
+Capture cam;
+OpenCV opencv;
+
+// face for recognizing
+Rectangle[] faces;
+//face color
+int faceCenterX, faceCenterY;
+float cx1, cy1;  // center of the face
+float cx2, cy2;  // left of the face
+float cx3, cy3;  // right of the face
+
+//sphere
+HE_Mesh mesh;
+HE_Mesh noiseMesh;
+WB_Render render;
+HE_Vertex[] points;
+HE_Vertex[] noisePoints;
+
+PImage bg;
+PFont alert;
+PFont welcome;
+String alertTitle = "ALERT: \n  ALL INFO ARE COLLECTED AND ANALYZED BY THIS COMPUTER";
+String alertContent = "The scenario is intended to resonate with my audience by having them participate in the situation of being judged arbitrarily based on their physical appearance and categorized by the stereotype. The analysis of machine is intended to place my audiences into a futuristic sense of being materialized at a certain level of technological development.";
+String welcome1 = "WELCOME TO DATA MIRROR";
+String welcome2 = "CAMERA DETECTION HAS BEEN INITIATED \n PLEASE GET READY";
+String welcome3 = "RESPONDING  YES  TO TRIGGER THE SYSTEM";
+String dot = "WAITING FOR THE DOTS";
+String dignosingText = "DETECTED THE RACE IS ";
+String surveyText = "WAS MY IDENTIFICATION CORRECT?";
+String endingTitle = "STOP BEING RACISTS";
+String endingContent = "This is how the machine works. It judges based on other human’s responses online and fosters stereotypes by itself. Machines can’t think. Machines are representing the human thoughts only.";
+String raceText; 
+int raceNum;
+int raceDetected;
+
+boolean captureSpeak = false;
+
+//ArrayList<Feedback> feedbacks;
+
+//timer from shiffman: http://learningprocessing.com/examples/chp10/example-10-04-timer
+int savedTime;
+int savedTimeEnd;
+int scene0Time = 2000;
+int scene1Time = 4000;
+int scene2Time = 6500;
+int scene3Time = 13000;
+int scene4Time = 16500;
+int scene5Time = 21000;
+//int scene6Time = 14000;
+boolean interactionEnd = false;
+int endScene0 = 1500;
+int endScene1 = 5500;
+int endScene2 = 8500;
+
+
+
+
+
+float x;
+float y;
+boolean isSaid;
+int numberT;
+
+Evaluation[] evaluation;
+boolean pMousePressed;
+PFont race;
+boolean isDrawingText;
+int frameE = 0;
+int refsE = 0;
+boolean showFrameE = true;
+boolean faceLineEnd = false;
+boolean isDetecting = true;
+//line style
+int widthStep = 10;
+int heightStep = 12;
+
+
+
+
+void setup() {
+  size(1280, 720, P3D);
+  //fullScreen(P3D);
+  smooth();
+
+  bg = loadImage("newbg720.png");
+  welcome = createFont("SmartCourierEUR-Medium.ttf", 40);
+  alert = createFont("SmartCourierEUR-Medium.ttf", 30);
+  robotVoice1 = new Minim(this);
+  robotVoice2 = new Minim(this);
+  robotVoice3 = new Minim(this);
+  robotVoice4 = new Minim(this);
+  bgMusic = new Minim(this);
+  audioInput = new Minim(this);
+  playerBG = bgMusic.loadFile("bgMusic.wav", 1024);
+  player1 = robotVoice1.loadFile("robot1.wav", 1024);
+  player2 = robotVoice2.loadFile("robot2.wav", 1024);
+  player3 = robotVoice3.loadFile("robot3.wav", 1024);
+  player4 = robotVoice4.loadFile("correct.wav", 1024);
+  // use the getLineIn method of the Minim object to get an AudioInput
+  in = audioInput.getLineIn();
+
+  isSaid = false;
+  isDrawingText = false;
+  //sphere Icon
+  HEC_Sphere creator=new HEC_Sphere();
+  creator.setRadius(80); 
+  creator.setUFacets(32);
+  creator.setVFacets(32);
+  mesh = new HE_Mesh(creator);
+  noiseMesh = new HE_Mesh(creator);
+  HET_Diagnosis.validate(mesh);
+  noisePoints = noiseMesh.getVerticesAsArray().clone();
+
+
+  render=new WB_Render(this);
+
+  //prepare the text feedbacks
+  race = createFont("SmartCourierEUR-ExtraBold.ttf", 23);  
+  //textMode(SHAPE);
+  evaluation = new Evaluation[30];
+  for (int i=0; i<30; i++) {
+    evaluation[i] = new Evaluation(i, 23, i*23);
+  }
+
+  // Start capturing
+  cam = new Capture(this, 1280, 720);
+  cam.start(); 
+
+  // face recognition
+  opencv = new OpenCV(this, 1280, 720);
+  opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);  
+
+
+  // start background sound
+  playerBG.play();
+  // save the time
+  savedTime = millis();
+}
+
+
+
+void draw() {
+  //scale(1.15);
+  opencv.loadImage(cam);
+  //image(cam, 0, 0);
+  faces = opencv.detect();
+
+  println(captureSpeak);
+
+
+  if (faces.length > 0) {
+
+    raceNum = 0;
+    
+    
+        println(raceText);
+        if (interactionEnd == true && faceLineEnd == false) {
+    
+          lineFace();
+          captureSpeak = false;
+          
+          drawInfo();
+          savedTimeEnd = millis(); // Save the current time to restart the time
+        } 
+        else if (faceLineEnd == true) {
+          //println("successfully jump");
+          runEndInteraction();
+        } else {
+          runInteraction();
+        }
+
+    //drawRaceText(raceText);
+  } else {
+    
+    savedTime = millis(); // Save the current time to restart the time
+    fill(#F23131);
+    //textFont(welcome);
+    //textAlign(CENTER, CENTER);
+    //drawRaceText("NULL");
+    background(0);
+    textFont(welcome);
+    textSize(40);
+    textAlign(CENTER, CENTER);
+    text(alertTitle, width/2, height/4*1.6);
+    textFont(alert);
+    fill(200);
+    text(alertContent, width/6.8, height/4*1.6, 900, 360);
+
+    player1.rewind();
+    player2.rewind();
+    player3.rewind();
+    player4.rewind();
+
+    player1.pause();
+    player2.pause();
+    player3.pause();
+    player4.pause();
+    captureSpeak = false;
+    faceLineEnd = false;
+    interactionEnd = false;
+    frameE = 0;
+    refsE = 0;
+    showFrameE = true;
+    isDetecting = true;
+  }
+  //  // println(frameCount - captureSpeak);
+  //  isSaid = true;
+  //  isDrawingText = false;
+  //  in.disableMonitoring();
+}
+void runInteraction() {
+
+
+  // Calculate how much time has passed
+  int passedTime = millis() - savedTime;
+
+
+
+  textAlign(CENTER, CENTER);
+
+  //// voice interaction
+  if (passedTime > scene0Time && passedTime < scene1Time) {
+    image(bg, 0, 0);
+    drawIcon();
+  } else if (passedTime > scene1Time && passedTime < scene2Time) {
+    image(bg, 0, 0);
+    drawIcon();
+    fill(200);
+    textFont(welcome);
+    text(welcome1, width/2, height/4*2.6);
+    player1.play();
+  } else if (passedTime > scene2Time && passedTime < scene3Time) {
+    image(bg, 0, 0);
+    drawIcon();
+    fill(200);
+    textFont(welcome);
+    text(welcome2, width/2, height/4*2.6);
+    player2.play();
+  } else if (passedTime > scene3Time && passedTime < scene4Time) {
+    image(bg, 0, 0);
+    drawIcon();
+    fill(200);
+    textFont(welcome);
+    text(welcome3, width/2, height/4*2.6);
+       text(dot, width/2, height/4*3);
+    player3.play();
+  } else if (passedTime > scene4Time && captureSpeak == false) {
+    image(bg, 0, 0);
+    drawIcon();
+    raceDetected = (int)random(1,4);
+
+    for (int i = width/3 + 130; i < in.bufferSize()-width/3 + 130; i = i+15)
+    {
+      noStroke();
+      fill(200);
+      ellipse(i, height/4*2.6 + in.left.get(i)*250, 5, 5); 
+      // stroke(200,80);
+
+      // println(in.left.get(i));
+
+      if (in.left.get(i)*1000 > 50) {
+        captureSpeak = true;
+      }
+    }
+  } else if (passedTime > scene5Time &&  captureSpeak == true ) {   // 
+    image(bg, 0, 0);
+    drawIcon();
+    fill(200);
+    textFont(welcome);
+    if(raceDetected == 1){
+      drawRaceText("WHITE");
+    }
+    
+    if(raceDetected == 2){
+      drawRaceText("ASIAN");
+    }
+    
+    if(raceDetected == 3){
+      drawRaceText("BLACK");
+    }
+    
+    interactionEnd = true;
+  }
+
+
+  //else{
+  //  captureSpeak = false;
+  //}
+}
+
+void runEndInteraction() {
+  textAlign(CENTER, CENTER);
+ 
+
+  int passedTime = millis() - savedTimeEnd;
+  println(passedTime);
+  if(passedTime > endScene0 && passedTime < endScene1){
+    
+    image(bg, 0, 0);
+    drawIcon();
+    fill(200);
+    player4.play();
+    textFont(welcome);
+    text(surveyText, width/2, height/4*2.6);
+  
+  }
+   else  if (passedTime > endScene1 && captureSpeak == false) {
+    image(bg, 0, 0);
+    drawIcon();
+    fill(200);
+   // player4.play();
+    textFont(welcome);
+    text(surveyText, width/2, height/4*2.6);
+    for (int i = width/3 + 130; i < in.bufferSize()-width/3 + 130; i = i+15)
+    {
+      noStroke();
+      fill(200);
+      ellipse(i, height/4*3.0 + in.left.get(i)*250, 5, 5); 
+      // stroke(200,80);
+
+      // println(in.left.get(i));
+
+      if (in.left.get(i)*1000 > 50) {
+        captureSpeak = true;
+      }
+    }
+  }
+
+  else if (passedTime > endScene2 && captureSpeak == true) {
+    background(0);
+    textFont(welcome);
+    textSize(36);
+    fill(#F23131);
+    textAlign(CENTER, CENTER);
+    text(endingTitle, width/2, height/4*1.6);
+    textFont(alert);
+    fill(200);
+    text(endingContent, width/4.5, height/4*1.6, 700, 300);
+  }
+}
+
+
+int detectFaceColor() {
+  for (int i=0; i<faces.length; i++) {
+    faceCenterX = faces[i].x + (faces[i].width/2);
+    faceCenterY = faces[i].y + (faces[i].height/2);
+
+    cx1 = faces[i].x + faces[i].width * 0.5; // set averageX to 50% of face width
+    cy1 = faces[i].y + faces[i].height * 0.5; // set averageY to 50% of face height
+    cx2 = faces[i].x + faces[i].width * 0.25; // set averageX to 30% of face width
+    cy2 = faces[i].y + faces[i].height * 0.65; // set averageY to 65% of face height
+    cx3 = faces[i].x + faces[i].width * 0.75; // set averageX to 70% of face width
+    cy3 = faces[i].y + faces[i].height * 0.65; // set averageY to 65% of face height
+
+
+    //test of point 1
+    color faceColor1 = color(get((int)cx1, (int)cy1));
+    // noStroke();
+    // fill(faceColor1);
+    // ellipse(cx1, cy1, 10, 10);
+    //test of point 2
+    color faceColor2 = color(get((int)cx2, (int)cy2));
+    // noStroke();
+    // fill(faceColor2);
+    // ellipse(cx2, cy2, 10, 10);
+    //test of point 3
+    color faceColor3 = color(get((int)cx3, (int)cy3));
+    // noStroke();
+    // fill(faceColor3);
+    // ellipse(cx3, cy3, 10, 10); 
+    color faceColor = color((red(faceColor1)+red(faceColor2)+red(faceColor3))/3, (green(faceColor1)+green(faceColor2)+green(faceColor3))/3, (blue(faceColor1)+blue(faceColor2)+blue(faceColor3))/3); 
+    // fill(faceColor);
+    // ellipse(50, 50, 50, 50);
+
+    if (red(faceColor) > 120 && green(faceColor) > 120 && blue(faceColor) > 120) { //white skin
+      raceText = "WHITE";
+      raceNum = 1;
+    } else if (red(faceColor) > 30 && red(faceColor) < 120 && green(faceColor) > 30 && green(faceColor) < 120 && blue(faceColor) > 30 && blue(faceColor) < 120) { //yellow skin
+      raceText = "ASIAN";
+      raceNum = 2;
+    } else {  // dark skin
+      raceText = "BLACK";
+      raceNum = 3;
+    }
+    
+  }
+  return raceNum;
+}
+
+
+void lineFace() {
+  //noStroke();
+  fill(0);
+  rect(0, 0, width, height);
+  int i;
+  int j;
+  for (i = 0; i <= height; i += heightStep) {
+    beginShape();
+    for (j = 0; j <= width; j += widthStep) {
+
+      color c = cam.get(j, i);
+      float r = red(c);
+      float g = green(c);
+      float b = blue(c);
+      float brightness = (r+g+b)/3;
+      float offset = map(brightness, 0, 255, 0, 20);    
+      stroke(c); 
+      curveVertex(j, i+offset);
+    }
+    endShape();
+  }
+}
+
+void drawRaceText(String race) {
+  text(dignosingText + " " + race, width/2, height/4*2.6);
+}
+
+void drawInfo() {
+  pushMatrix();
+  translate(30, 50, 1);
+
+  colorMode(RGB);
+  fill(#F23131);  
+  textFont(race);
+  textAlign(LEFT);
+  //stroke(255); 
+  //background(0);
+  if (showFrameE) {
+    for (int i = 0; i< frameE; i++ ) {
+      evaluation[i/2].display(raceDetected);
+    }
+    if (frameE < 46) {
+      frameE = (frameE+1);
+    } else {
+      frameE = 46;
+      showFrameE = false;
+    }
+  } else {
+    for (int j = 0; j< refsE; j++ ) {
+      evaluation[j/2].showRefs();
+    }
+    if (refsE < 60) {
+      refsE = (refsE+1);
+    } else {
+      refsE = 60;
+      faceLineEnd = true;
+    }
+  }
+  popMatrix();
+}
+
+void drawIcon() {
+  float sphereRot = 0.0;
+  noLights();
+  pushMatrix();
+  translate(width/2, height/2.2);
+  rotateY(radians(sphereRot));
+  rotateX(radians(83));
+
+  Iterator<HE_Face> fItr = noiseMesh.fItr();
+  HE_Face f;
+  int i = 0;
+  colorMode(HSB);
+  while (fItr.hasNext ()) {
+    f = fItr.next();
+    fill(343, 234*noise(frameCount/300.0 + i/9.0), 279*noise(frameCount/300.0 + i/7.0), 200); 
+    //println(255*noise(frameCount/141.5 + i/7.61));
+    //fill(255*noise(frameCount/323.1 + i/7.61), 238, 238, 150); 
+    noStroke();
+    render.drawFace(f);
+    i++;
+  }
+  sphereRot += 0.1;
+  popMatrix();
+}
+
+void captureEvent(Capture c) {
+  c.read();
+}
