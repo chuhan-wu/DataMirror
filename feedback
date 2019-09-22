@@ -1,0 +1,134 @@
+class Evaluation {
+  String[] asian = { "COLOR DETECTED: YELLOW", 
+   "///",
+    "SPECULATED RACE: ASIAN ", 
+    "///", 
+    "PULLING OUT INFORATIONF FROM", 
+    "ASIAN...", 
+    "THE TOP FEW SEARCHING RESULTS:", 
+    "https://en.wikipedia.org/wiki/Race_and_intelligence", 
+    "ACCORDING TO ONLINE SEARCHING:", 
+    "AVG IQ OF ASIAN:     108", 
+    "EQ OF ASIAN:         93.2", 
+    "RANKING: 1ND PLACE OF HIGHEST IQ;", 
+    "//", 
+    "3RD PLACE OF HIGHEST EQ", 
+    "//",  
+    "JOB SUGGESTION:",
+    "71% TECHNOLOGY;", 
+    "PROGRAMMER;",
+    "DATA ANALYST;", 
+    "MATHEMATICIAN;",
+    "20% CATERING INDUSTRY", 
+    "LOCAL RESTAURANT;",
+    "HOTEL ROOM SERVICE;",
+    "..." 
+  };
+
+  String[] black = { "COLOR DETECTED: DARK", 
+   "///",
+    "SPECULATED RACE: AFRICAN AMERICAN", 
+    "///", 
+    "PULLING OUT INFORATIONF FROM", 
+    "AFRICAN AMERICAN...", 
+    "THE TOP FEW SEARCHING RESULTS:", 
+    "https://en.wikipedia.org/wiki/Race_and_intelligence", 
+    "ACCORDING TO ONLINE SEARCHING:", 
+    "AVG IQ OF AFRICAN AMERICAN:      95.4", 
+    "EQ OF AFRICAN AMERICAN:          95.2", 
+    "RANKING: 3ND PLACE OF HIGHEST IQ;", 
+    "//", 
+    "2ST PLACE OF HIGHEST EQ", 
+    "//", 
+    "JOB SUGGESTION:",
+    "ATHLETIC PRIORITY", 
+    "70% ATHLETICS OF THE U.S. ARE AFRICAN AMERICAN",
+    "TOP 1 RUNNER AMONG THREE RACES", 
+    "...",
+    " ",
+    " ",
+    " ",
+    " "
+
+  };
+
+  String[] white = { "COLOR DETECTED: WHITE", 
+   "///",
+    "SPECULATED RACE: CAUCASIAN", 
+    "///", 
+    "PULLING OUT INFORATIONF FROM", 
+    "WHITE...", 
+    "THE TOP FEW SEARCHING RESULTS:", 
+    "https://en.wikipedia.org/wiki/Race_and_intelligence", 
+    "ACCORDING TO ONLINE SEARCHING:", 
+    "AVG IQ OF WHITE:      95.4", 
+    "EQ OF WHITE:          97.5", 
+    "RANKING: 2ND PLACE OF HIGHEST IQ; //", 
+    "1ST PLACE OF HIGHEST EQ", 
+    "//", 
+    "JOB SUGGESTION:",
+    "ALL JUBS ARE SUITABLE", 
+    "MARKETING;",
+    "LAYWER;",
+    "BANKER;",
+    "DOCTOR;",
+    "FOR WHITE IN THE UNITED STATES", 
+    "TOP 1 SWIMMER AMONG THREE RACES", 
+    "...",
+    " "
+  };
+   String[] references = { "REFERENCES:",
+"From Quora- Public responses gathering website",  
+"https://www.quora.com/What-are-the-advantages-and-disadvantages-of-all-races",
+"//", 
+"From Quora- Public responses gathering website",  
+"https://www.quora.com/What-kind-of-benefits-does-each-human-race-have",
+"//",
+"From Enotes- Public responses gathering website", 
+"https://www.enotes.com/homework-help/what-advantages-having-different-racial-ethnicity-374773",
+"//",
+"From Pewresearch- encyclopedia website", 
+"https://www.pewresearch.org/fact-tank/2017/09/28/views-about-whether-whites-benefit-from-societal", 
+"-advantages-split-sharply-along-racial-and-partisan-lines/",
+"//",
+"From Google- Public responses gathering website",
+"https://www.google.com/search?ei=v2S2XOLeOoO_0PEPm9yRmAM&q=race&oq=", 
+"race&gs_l=psy-ab.3..0i67l3j0i131j0i67l2j0l2j0i131l2.15243.18523..19398...0.0..3.376.1668.4j3j0j3......0....1..gws-wiz.....0.ktt776rr754",
+"//",
+"From Google- Public responses gathering website",
+"https://www.google.com/search?ei=1GS2XJn9Cu7M0PEPnp-CwAk&q=race+advantages&oq=race+advan&gs_l=", 
+"psy-ab.1.0.0l2j0i22i30l8.662196.663549..664903...0.0..0.114.572.4j2......0....1..gws-wiz.......0i71j0i67j0i131.a53_tCv7vjM",
+"//",
+"From Gaming Stackexchange- Public responses gathering website",
+"https://gaming.stackexchange.com/questions/34981/what-are-the-advantages-disadvantages-of-each-race",
+"//",
+"From Showingup for racial justice- encyclopedia website", 
+"https://www.showingupforracialjustice.org/white-privilege.html", 
+"//", 
+"//", 
+"//"
+   };
+  
+  float x, y;
+  int number;
+
+
+  Evaluation(int number, float x, float y) {
+    this.number=number;
+    this.x=x;
+    this.y=y;
+  }
+  void display(int raceNum) {
+    if (raceNum == 1) {
+      text(white[number], x, y);
+    } else if (raceNum == 2) {
+      text(asian[number], x, y);
+    } else if (raceNum == 3) {
+      text(black[number], x, y);
+    }
+  }
+  
+  void showRefs(){
+    text(references[number], x, y);
+  }
+}
